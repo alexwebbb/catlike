@@ -26,6 +26,8 @@ public class Maze : MonoBehaviour {
         return cells[coordinates.x, coordinates.z];
     }
 
+    // I can only conclude that the writer of this code is a moron
+    bool continueBool = true;
 
     // this code is hideous
     public IEnumerator Generate() {
@@ -33,9 +35,9 @@ public class Maze : MonoBehaviour {
         cells = new MazeCell[size.x, size.z];
         List<MazeCell> activeCells = new List<MazeCell>();
         DoFirstGenerationStep(activeCells);
-        while (activeCells.Count > 0) {
+        while (activeCells.Count > 0 && continueBool) {
             yield return delay;
-            DoNextGenerationStep(activeCells);
+            continueBool = DoNextGenerationStep(activeCells);
         }
     }
 
@@ -57,7 +59,7 @@ public class Maze : MonoBehaviour {
 
 
     // Why dont I just nest these cells in like three more game objects. that is object oriented right
-    private void DoNextGenerationStep(List<MazeCell> activeCells) {
+    private bool DoNextGenerationStep(List<MazeCell> activeCells) {
         int currentIndex = activeCells.Count - 1;
         MazeCell currentCell = activeCells[currentIndex];
         MazeDirection direction = MazeDirections.RandomValue;
@@ -65,8 +67,9 @@ public class Maze : MonoBehaviour {
         if (ContainsCoordinates(coordinates) && GetCell(coordinates) == null) {
             activeCells.Add(CreateCell(coordinates));
         } else {
-            activeCells.RemoveAt(currentIndex);
 
+            if (currentIndex == 0 || activeCells[currentIndex - 1] == null) return false;
+            activeCells.RemoveAt(currentIndex);
 
             Material mat = activeCells[currentIndex - 1].GetComponentInChildren<MeshRenderer>().material;
 
@@ -77,9 +80,17 @@ public class Maze : MonoBehaviour {
                 case 1:
                     mat.color = Color.yellow;
                     break;
+                case 2:
+                    mat.color = Color.green;
+                    break;
+                case 3:
+                    mat.color = Color.cyan;
+                    break;
             }
 
             activeCells[currentIndex - 1].backtrackCount++;
         }
+
+        return true;
     }
 }
