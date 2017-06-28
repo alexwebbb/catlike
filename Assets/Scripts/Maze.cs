@@ -55,6 +55,7 @@ public class Maze : MonoBehaviour {
     // I am surprised this idiot didnt pull these into yet another external class
     private void DoFirstGenerationStep(List<MazeCell> activeCells) {
         activeCells.Add(CreateCell(RandomCoordinates));
+        activeCells[0].GetComponentInChildren<MeshRenderer>().material.color = Color.blue;
     }
 
 
