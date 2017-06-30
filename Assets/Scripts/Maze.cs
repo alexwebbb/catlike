@@ -52,7 +52,6 @@ public class Maze : MonoBehaviour {
         return newCell;
     }
 
-    // I am surprised this idiot didnt pull these into yet another external class
     private void DoFirstGenerationStep(List<MazeCell> activeCells) {
         activeCells.Add(CreateCell(RandomCoordinates));
         activeCells[0].backtrackCount = activeCells[0].backtrackCount + 3;
@@ -60,7 +59,6 @@ public class Maze : MonoBehaviour {
     }
 
 
-    // Why dont I just nest these cells in like three more game objects. that is object oriented right
     private bool DoNextGenerationStep(List<MazeCell> activeCells) {
         int currentIndex = activeCells.Count - 1;
         MazeCell currentCell = activeCells[currentIndex];
