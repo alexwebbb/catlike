@@ -54,7 +54,6 @@ public class Maze : MonoBehaviour {
 
     private void DoFirstGenerationStep(List<MazeCell> activeCells) {
         activeCells.Add(CreateCell(RandomCoordinates));
-        activeCells[0].backtrackCount = activeCells[0].backtrackCount + 3;
 
     }
 
@@ -69,8 +68,18 @@ public class Maze : MonoBehaviour {
         // fetch that current cell
         MazeCell currentCell = activeCells[currentIndex];
 
-        // pick a random direction to test. this is how the maze is randomized
-        MazeDirection direction = MazeDirections.RandomValue;
+        // has the cell initialized all sides?
+        if (currentCell.IsFullyInitialized) {
+
+            // if so, the cell is no longer traversable
+            // that is, it can no longer be used to place cells
+            activeCells.RemoveAt(currentIndex);
+            return;
+        }
+
+        // pick a random direction to test. this is how the maze is randomized.
+        // this function picks only from the available edges
+        MazeDirection direction = currentCell.RandomUninitializedDirection;
 
         // get the coordinates of the cell we are about to test, using that random direction
         IntVector2 coordinates = currentCell.coordinates + direction.ToIntVector2();
@@ -99,11 +108,7 @@ public class Maze : MonoBehaviour {
                 // cannot be created. therefore we will create a wall
                 CreateWall(currentCell, neighbor, direction);
 
-                // the edge we are testing cannot be traversed here
-                // this may mean that those coordinates already exist in the list as a passage
-                activeCells.RemoveAt(currentIndex);
-
-                SetColorOnBacktrack(activeCells[currentIndex - 1]);
+                // SetColorOnBacktrack(activeCells[currentIndex - 1]);
             }
 
         } else {
@@ -111,38 +116,7 @@ public class Maze : MonoBehaviour {
             // in this case the position is outside of the bounds of the map, thus a wall
             CreateWall(currentCell, null, direction);
 
-            // if (currentIndex == 0 || activeCells[currentIndex - 1] == null) return false;
-
-            // a position outside of the bounds of the map cannot be traversed
-            activeCells.RemoveAt(currentIndex);
-
         }
-    }
-
-    private void SetColorOnBacktrack(MazeCell cell) {
-
-        Material mat = cell.GetComponentInChildren<MeshRenderer>().material;
-
-        switch (cell.backtrackCount) {
-            case 0:
-                mat.color = Color.red;
-                break;
-            case 1:
-                mat.color = Color.yellow;
-                break;
-            case 2:
-                mat.color = Color.green;
-                break;
-            case 3:
-                mat.color = Color.cyan;
-                break;
-            case 4:
-                mat.color = Color.blue;
-                break;
-        }
-
-        cell.backtrackCount++;
-
     }
 
     private void CreatePassage(MazeCell cell, MazeCell otherCell, MazeDirection direction) {
