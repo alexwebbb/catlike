@@ -16,8 +16,10 @@ public class Maze : MonoBehaviour {
     public MazePassage passagePrefab;
     public MazeWall[] wallPrefabs;
     public MazeDoor doorPrefab;
+    public MazeRoomSettings[] roomSettings;
 
     private MazeCell[,] cells;
+    private List<MazeRoom> rooms = new List<MazeRoom>();
 
     public IntVector2 RandomCoordinates {
         get {
@@ -33,8 +35,6 @@ public class Maze : MonoBehaviour {
         return cells[coordinates.x, coordinates.z];
     }
 
-
-
     public IEnumerator Generate() {
         WaitForSeconds delay = new WaitForSeconds(generationStepDelay);
         cells = new MazeCell[size.x, size.z];
@@ -44,6 +44,17 @@ public class Maze : MonoBehaviour {
             yield return delay;
             DoNextGenerationStep(activeCells);
         }
+    }
+
+    private MazeRoom CreateRoom(int indexToExclude) {
+        MazeRoom newRoom = ScriptableObject.CreateInstance<MazeRoom>();
+        newRoom.settingsIndex = Random.Range(0, roomSettings.Length);
+        if (newRoom.settingsIndex == indexToExclude) {
+            newRoom.settingsIndex = (newRoom.settingsIndex + 1) % roomSettings.Length;
+        }
+        newRoom.settings = roomSettings[newRoom.settingsIndex];
+        rooms.Add(newRoom);
+        return newRoom;
     }
 
     private MazeCell CreateCell(IntVector2 coordinates) {
@@ -57,10 +68,11 @@ public class Maze : MonoBehaviour {
         return newCell;
     }
 
-    private void DoFirstGenerationStep(List<MazeCell> activeCells) {
-        activeCells.Add(CreateCell(RandomCoordinates));
-
-    }
+    private void DoFirstGenerationStep (List<MazeCell> activeCells) {
+		MazeCell newCell = CreateCell(RandomCoordinates);
+		newCell.Initialize(CreateRoom(-1));
+		activeCells.Add(newCell);
+	}
 
 
     private void DoNextGenerationStep(List<MazeCell> activeCells) {
@@ -126,10 +138,17 @@ public class Maze : MonoBehaviour {
 
 
     private void CreatePassage(MazeCell cell, MazeCell otherCell, MazeDirection direction) {
+
+        // remember... maze passage is derived from cell edge
         MazePassage prefab = Random.value < doorProbability ? doorPrefab : passagePrefab;
         MazePassage passage = Instantiate(prefab) as MazePassage;
         passage.Initialize(cell, otherCell, direction);
         passage = Instantiate(prefab) as MazePassage;
+        if (passage is MazeDoor) {
+            otherCell.Initialize(CreateRoom(cell.room.settingsIndex));
+        } else {
+            otherCell.Initialize(cell.room);
+        }
         passage.Initialize(otherCell, cell, direction.GetOpposite());
     }
 
