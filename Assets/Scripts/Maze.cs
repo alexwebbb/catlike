@@ -119,6 +119,11 @@ public class Maze : MonoBehaviour {
                 // add the mazecell to the list so that it can be traversed
                 activeCells.Add(neighbor);
 
+            // this case will eliminate walls between room sharing cells
+            } else if (currentCell.room.settingsIndex == neighbor.room.settingsIndex) {
+
+                CreatePassageInSameRoom(currentCell, neighbor, direction);
+
             } else {
 
                 // in this case, a cell exists at the position we tested, and a passage
@@ -151,6 +156,20 @@ public class Maze : MonoBehaviour {
         }
         passage.Initialize(otherCell, cell, direction.GetOpposite());
     }
+
+    private void CreatePassageInSameRoom (MazeCell cell, MazeCell otherCell, MazeDirection direction) {
+		MazePassage passage = Instantiate(passagePrefab) as MazePassage;
+		passage.Initialize(cell, otherCell, direction);
+		passage = Instantiate(passagePrefab) as MazePassage;
+		passage.Initialize(otherCell, cell, direction.GetOpposite());
+        if (cell.room != otherCell.room) {
+            MazeRoom roomToAssimilate = otherCell.room;
+            cell.room.Assimilate(roomToAssimilate);
+            rooms.Remove(roomToAssimilate);
+            Destroy(roomToAssimilate);
+        }
+    }
+	
 
     private void CreateWall(MazeCell cell, MazeCell otherCell, MazeDirection direction) {
         MazeWall wall = Instantiate(wallPrefabs[Random.Range(0, wallPrefabs.Length)]) as MazeWall;
