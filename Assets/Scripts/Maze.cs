@@ -41,9 +41,10 @@ public class Maze : MonoBehaviour {
         List<MazeCell> activeCells = new List<MazeCell>();
         DoFirstGenerationStep(activeCells);
         while (activeCells.Count > 0) {
-            yield return delay;
+            // yield return delay;
             DoNextGenerationStep(activeCells);
         }
+        yield return null;
     }
 
     private MazeRoom CreateRoom(int indexToExclude) {
