@@ -11,14 +11,18 @@ public class MazeDoor : MazePassage {
         }
     }
 
+    private static Quaternion
+         mirroredRotation = Quaternion.Euler(0f, -90f, 0f),
+         normalRotation = Quaternion.Euler(0f, 90f, 0f);
+
+    private bool isMirrored;
+
     public override void Initialize(MazeCell primary, MazeCell other, MazeDirection direction) {
         base.Initialize(primary, other, direction);
         if (OtherSideOfDoor != null) {
-            // flipping the door 
-            // because it is being flipped from the hinge, it is inverted with scale
+            isMirrored = true;
             hinge.localScale = new Vector3(-1f, 1f, 1f);
             Vector3 p = hinge.localPosition;
-            // then the position is adjusted so that it is back at its original position
             p.x = -p.x;
             hinge.localPosition = p;
         }
@@ -28,5 +32,16 @@ public class MazeDoor : MazePassage {
                 child.GetComponent<Renderer>().material = cell.room.settings.wallMaterial;
             }
         }
+    }
+
+    public override void OnPlayerEntered() {
+        OtherSideOfDoor.hinge.localRotation = hinge.localRotation =
+            isMirrored ? mirroredRotation : normalRotation;
+        OtherSideOfDoor.cell.room.Show();
+    }
+
+    public override void OnPlayerExited() {
+        OtherSideOfDoor.hinge.localRotation = hinge.localRotation = Quaternion.identity;
+        OtherSideOfDoor.cell.room.Hide();
     }
 }
