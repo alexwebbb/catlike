@@ -6,6 +6,9 @@ public class BezierSpline : MonoBehaviour {
     [SerializeField]
     private Vector3[] points;
 
+    [SerializeField]
+    private BezierControlPointMode[] modes;
+
     public int ControlPointCount {
         get {
             return points.Length;
@@ -69,6 +72,9 @@ public class BezierSpline : MonoBehaviour {
         points[points.Length - 2] = point;
         point.x += 1f;
         points[points.Length - 1] = point;
+
+        Array.Resize(ref modes, modes.Length + 1);
+        modes[modes.Length - 1] = modes[modes.Length - 2];
     }
 
     public void Reset() {
@@ -77,6 +83,11 @@ public class BezierSpline : MonoBehaviour {
             new Vector3(2f, 0f, 0f),
             new Vector3(3f, 0f, 0f),
             new Vector3(4f, 0f, 0f)
+        };
+
+        modes = new BezierControlPointMode[] {
+            BezierControlPointMode.Free,
+            BezierControlPointMode.Free
         };
     }
 }
