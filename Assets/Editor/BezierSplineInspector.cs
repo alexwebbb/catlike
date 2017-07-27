@@ -4,6 +4,12 @@ using UnityEngine;
 [CustomEditor(typeof(BezierSpline))]
 public class BezierSplineInspector : Editor {
 
+    private static Color[] modeColors = {
+        Color.white,
+        Color.magenta,
+        Color.cyan
+    };
+
     private const int lineSteps = 10;
     private const int stepsPerCurve = 10;
     private const float directionScale = 0.5f;
@@ -35,6 +41,13 @@ public class BezierSplineInspector : Editor {
         if (EditorGUI.EndChangeCheck()) {
             Undo.RecordObject(spline, "Move Point");
             spline.SetControlPoint(selectedIndex, point);
+        }
+        EditorGUI.BeginChangeCheck();
+        BezierControlPointMode mode = (BezierControlPointMode)
+            EditorGUILayout.EnumPopup("Mode", spline.GetControlPointMode(selectedIndex));
+        if (EditorGUI.EndChangeCheck()) {
+            Undo.RecordObject(spline, "Change Point Mode");
+            spline.SetControlPointMode(selectedIndex, mode);
         }
     }
 
@@ -73,7 +86,7 @@ public class BezierSplineInspector : Editor {
 
     private Vector3 ShowPoint(int index) {
         Vector3 point = handleTransform.TransformPoint(spline.GetControlPoint(index));
-        Handles.color = Color.white;
+        Handles.color = modeColors[(int)spline.GetControlPointMode(index)];
         float size = HandleUtility.GetHandleSize(point);
         if (Handles.Button(point, handleRotation, size * handleSize, size * pickSize, Handles.CubeHandleCap)) {
             selectedIndex = index;
