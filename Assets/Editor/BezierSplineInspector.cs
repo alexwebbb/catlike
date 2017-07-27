@@ -5,18 +5,36 @@ using UnityEngine;
 public class BezierSplineInspector : Editor {
 
     private const int lineSteps = 10;
+    private const int stepsPerCurve = 10;
     private const float directionScale = 0.5f;
+
+    private const float handleSize = 0.1f;
+    private const float pickSize = 0.2f;
+
+    private int selectedIndex = -1;
 
     private BezierSpline spline;
     private Transform handleTransform;
     private Quaternion handleRotation;
 
     public override void OnInspectorGUI() {
-        DrawDefaultInspector();
         spline = target as BezierSpline;
+        if (selectedIndex >= 0 && selectedIndex < spline.ControlPointCount) {
+            DrawSelectedPointInspector();
+        }
         if (GUILayout.Button("Add Curve")) {
             Undo.RecordObject(spline, "Add Curve");
             spline.AddCurve();
+        }
+    }
+
+    private void DrawSelectedPointInspector() {
+        GUILayout.Label("Selected Point");
+        EditorGUI.BeginChangeCheck();
+        Vector3 point = EditorGUILayout.Vector3Field("Position", spline.GetControlPoint(selectedIndex));
+        if (EditorGUI.EndChangeCheck()) {
+            Undo.RecordObject(spline, "Move Point");
+            spline.SetControlPoint(selectedIndex, point);
         }
     }
 
@@ -27,7 +45,7 @@ public class BezierSplineInspector : Editor {
             handleTransform.rotation : Quaternion.identity;
 
         Vector3 p0 = ShowPoint(0);
-        for (int i = 1; i < spline.points.Length; i += 3) {
+        for (int i = 1; i < spline.ControlPointCount; i += 3) {
             Vector3 p1 = ShowPoint(i);
             Vector3 p2 = ShowPoint(i + 1);
             Vector3 p3 = ShowPoint(i + 2);
@@ -46,20 +64,28 @@ public class BezierSplineInspector : Editor {
         Handles.color = Color.green;
         Vector3 point = spline.GetPoint(0f);
         Handles.DrawLine(point, point + spline.GetDirection(0f) * directionScale);
-        for (int i = 1; i <= lineSteps; i++) {
-            point = spline.GetPoint(i / (float)lineSteps);
-            Handles.DrawLine(point, point + spline.GetDirection(i / (float)lineSteps) * directionScale);
+        int steps = stepsPerCurve * spline.CurveCount;
+        for (int i = 1; i <= steps; i++) {
+            point = spline.GetPoint(i / (float)steps);
+            Handles.DrawLine(point, point + spline.GetDirection(i / (float)steps) * directionScale);
         }
     }
 
     private Vector3 ShowPoint(int index) {
-        Vector3 point = handleTransform.TransformPoint(spline.points[index]);
-        EditorGUI.BeginChangeCheck();
-        point = Handles.DoPositionHandle(point, handleRotation);
-        if (EditorGUI.EndChangeCheck()) {
-            Undo.RecordObject(spline, "Move Point");
-            EditorUtility.SetDirty(spline);
-            spline.points[index] = handleTransform.InverseTransformPoint(point);
+        Vector3 point = handleTransform.TransformPoint(spline.GetControlPoint(index));
+        Handles.color = Color.white;
+        float size = HandleUtility.GetHandleSize(point);
+        if (Handles.Button(point, handleRotation, size * handleSize, size * pickSize, Handles.CubeHandleCap)) {
+            selectedIndex = index;
+            Repaint();
+        }
+        if (selectedIndex == index) {
+            EditorGUI.BeginChangeCheck();
+            point = Handles.DoPositionHandle(point, handleRotation);
+            if (EditorGUI.EndChangeCheck()) {
+                Undo.RecordObject(spline, "Move Point");
+                spline.SetControlPoint(index, handleTransform.InverseTransformPoint(point));
+            }
         }
         return point;
     }
