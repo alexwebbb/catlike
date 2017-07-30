@@ -25,9 +25,20 @@ public class BezierSplineInspector : Editor {
 
     public override void OnInspectorGUI() {
         spline = target as BezierSpline;
+        EditorGUI.BeginChangeCheck();
+        bool loop = EditorGUILayout.Toggle("Loop", spline.Loop);
+        if (EditorGUI.EndChangeCheck()) {
+            Undo.RecordObject(spline, "Toggle Loop");
+            EditorUtility.SetDirty(spline);
+            spline.Loop = loop;
+        }
+
+        // checks to see if selected index is in the array. it might not be if it were deleted
         if (selectedIndex >= 0 && selectedIndex < spline.ControlPointCount) {
             DrawSelectedPointInspector();
         }
+
+
         if (GUILayout.Button("Add Curve")) {
             Undo.RecordObject(spline, "Add Curve");
             spline.AddCurve();
@@ -94,7 +105,7 @@ public class BezierSplineInspector : Editor {
         }
         if (selectedIndex == index) {
             EditorGUI.BeginChangeCheck();
-            point = Handles.DoPositionHandle(point, handleRotation);
+            point = Handles.PositionHandle(point, handleRotation);
             if (EditorGUI.EndChangeCheck()) {
                 Undo.RecordObject(spline, "Move Point");
                 spline.SetControlPoint(index, handleTransform.InverseTransformPoint(point));

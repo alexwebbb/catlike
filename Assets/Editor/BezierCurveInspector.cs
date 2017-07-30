@@ -41,9 +41,10 @@ public class BezierCurveInspector : Editor {
     }
 
     private Vector3 ShowPoint(int index) {
+        // so I guess all this function does is expose the point to selection
         Vector3 point = handleTransform.TransformPoint(curve.points[index]);
         EditorGUI.BeginChangeCheck();
-        // i dont like that this function is not pure
+        // this draws the handle
         point = Handles.PositionHandle(point, handleRotation);
         if (EditorGUI.EndChangeCheck()) {
             Undo.RecordObject(curve, "Move Point");
