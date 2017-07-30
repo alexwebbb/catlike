@@ -97,8 +97,11 @@ public class BezierSplineInspector : Editor {
 
     private Vector3 ShowPoint(int index) {
         Vector3 point = handleTransform.TransformPoint(spline.GetControlPoint(index));
-        Handles.color = modeColors[(int)spline.GetControlPointMode(index)];
         float size = HandleUtility.GetHandleSize(point);
+        if (index == 0) {
+            size *= 2f;
+        }
+        Handles.color = modeColors[(int)spline.GetControlPointMode(index)];
         if (Handles.Button(point, handleRotation, size * handleSize, size * pickSize, Handles.CubeHandleCap)) {
             selectedIndex = index;
             Repaint();

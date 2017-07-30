@@ -51,15 +51,36 @@ public class BezierSpline : MonoBehaviour {
             // the distance of the point from its last position
             Vector3 delta = point - points[index];
 
-            // is there a point below?
-            if (index > 0) {
-                points[index - 1] += delta;
-            }
+            if (loop) {
+                // if its a loop we are grabbing the first and last points
+                if (index == 0) {
+                    // if the index is the first
+                    points[1] += delta;
+                    points[points.Length - 2] += delta;
+                    points[points.Length - 1] = point;
+                } else if (index == points.Length - 1) {
+                    // if the index is the last
+                    points[0] = point;
+                    points[1] += delta;
+                    points[index - 1] += delta;
+                } else {
+                    // this is basically the same case as below
+                    // except we dont have to check if we are on the edge
+                    points[index - 1] += delta;
+                    points[index + 1] += delta;
+                }
+            } else {
 
-            // is there a point above?
-            if (index + 1 < points.Length) {
-                points[index + 1] += delta;
-            }
+                // is there a point below?
+                if (index > 0) {
+                    points[index - 1] += delta;
+                }
+
+                // is there a point above?
+                if (index + 1 < points.Length) {
+                    points[index + 1] += delta;
+                }
+            }           
         }
 
         // this next line actually updates the position of the point
@@ -127,6 +148,12 @@ public class BezierSpline : MonoBehaviour {
 
         Array.Resize(ref modes, modes.Length + 1);
         modes[modes.Length - 1] = modes[modes.Length - 2];
+
+        if (loop) {
+            points[points.Length - 1] = points[0];
+            modes[modes.Length - 1] = modes[0];
+            EnforceMode(0);
+        }
     }
 
     public BezierControlPointMode GetControlPointMode(int index) {
@@ -154,7 +181,7 @@ public class BezierSpline : MonoBehaviour {
         BezierControlPointMode mode = modes[modeIndex];
 
         // if no action is required, return
-        if (mode == BezierControlPointMode.Free || modeIndex == 0 || modeIndex == modes.Length - 1) {
+        if (mode == BezierControlPointMode.Free || !loop && (modeIndex == 0 || modeIndex == modes.Length - 1)) {
             return;
         }
 
@@ -171,10 +198,22 @@ public class BezierSpline : MonoBehaviour {
         int fixedIndex, enforcedIndex;
         if (index <= middleIndex) {
             fixedIndex = middleIndex - 1;
+            if (fixedIndex < 0) {
+                fixedIndex = points.Length - 2;
+            }
             enforcedIndex = middleIndex + 1;
+            if (enforcedIndex >= points.Length) {
+                enforcedIndex = 1;
+            }
         } else {
             fixedIndex = middleIndex + 1;
+            if (fixedIndex >= points.Length) {
+                fixedIndex = 1;
+            }
             enforcedIndex = middleIndex - 1;
+            if (enforcedIndex < 0) {
+                enforcedIndex = points.Length - 2;
+            }
         }
 
 
