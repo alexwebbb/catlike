@@ -74,9 +74,11 @@ public class Cube : MonoBehaviour {
         int ring = (xSize + zSize) * 2;
         int t = 0, v = 0;
 
-        // why use q? dont make a damn lick a sense
-        for (int q = 0; q < xSize; q++, v++) {
-            t = SetQuad(triangles, t, v, v + 1, v + ring, v + ring + 1);
+        for (int y = 0; y < ySize; y++, v++) {
+            for (int q = 0; q < ring - 1; q++, v++) {
+                t = SetQuad(triangles, t, v, v + 1, v + ring, v + ring + 1);
+            }
+            t = SetQuad(triangles, t, v, v - ring + 1, v + ring, v + 1);
         }
 
         mesh.triangles = triangles;
