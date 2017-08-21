@@ -19,4 +19,9 @@ public class MeshDeformer : MonoBehaviour
 
         vertexVelocities = new Vector3[originalVertices.Length];
     }
+
+    public void AddDeformingForce(Vector3 point, float force)
+    {
+        Debug.DrawLine(Camera.main.transform.position, point);
+    }
 }
