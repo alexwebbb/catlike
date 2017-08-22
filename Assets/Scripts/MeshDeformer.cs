@@ -3,6 +3,9 @@
 [RequireComponent(typeof(MeshFilter))]
 public class MeshDeformer : MonoBehaviour
 {
+    public float springForce = 20f;
+    public float damping = 5f;
+
     Mesh deformingMesh;
     Vector3[] originalVertices, displacedVertices;
     Vector3[] vertexVelocities;
@@ -43,6 +46,10 @@ public class MeshDeformer : MonoBehaviour
     void UpdateVertex(int i)
     {
         Vector3 velocity = vertexVelocities[i];
+        Vector3 displacement = displacedVertices[i] - originalVertices[i];
+        velocity -= displacement * springForce * Time.deltaTime;
+        velocity *= 1f - damping * Time.deltaTime;
+        vertexVelocities[i] = velocity;
         displacedVertices[i] += velocity * Time.deltaTime;
     }
 
