@@ -4,6 +4,8 @@ public class MeshDeformerInput : MonoBehaviour
 {
 
     public float force = 10f;
+    public float forceOffset = 0.1f;
+
 
     void Update()
     {
@@ -12,7 +14,7 @@ public class MeshDeformerInput : MonoBehaviour
             HandleInput();
         }
     }
-
+    
     void HandleInput()
     {
         Ray inputRay = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -24,6 +26,7 @@ public class MeshDeformerInput : MonoBehaviour
             if (deformer)
             {
                 Vector3 point = hit.point;
+                point += hit.normal * forceOffset;
                 deformer.AddDeformingForce(point, force);
             }
         }

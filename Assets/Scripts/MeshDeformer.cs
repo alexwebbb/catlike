@@ -22,6 +22,13 @@ public class MeshDeformer : MonoBehaviour
 
     public void AddDeformingForce(Vector3 point, float force)
     {
-        Debug.DrawLine(Camera.main.transform.position, point);
+        for (int i = 0; i < displacedVertices.Length; i++)
+        {
+            AddForceToVertex(i, point, force);
+        }
+    }
+
+    void AddForceToVertex(int i, Vector3 point, float force)
+    {
     }
 }
