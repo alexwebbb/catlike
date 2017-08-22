@@ -7,6 +7,16 @@ public class MeshDeformer : MonoBehaviour
     Vector3[] originalVertices, displacedVertices;
     Vector3[] vertexVelocities;
 
+
+    public void AddDeformingForce(Vector3 point, float force)
+    {
+        for (int i = 0; i < displacedVertices.Length; i++)
+        {
+            AddForceToVertex(i, point, force);
+        }
+    }
+
+
     void Start()
     {
         deformingMesh = GetComponent<MeshFilter>().mesh;
@@ -20,15 +30,27 @@ public class MeshDeformer : MonoBehaviour
         vertexVelocities = new Vector3[originalVertices.Length];
     }
 
-    public void AddDeformingForce(Vector3 point, float force)
+    void Update()
     {
         for (int i = 0; i < displacedVertices.Length; i++)
         {
-            AddForceToVertex(i, point, force);
+            UpdateVertex(i);
         }
+        deformingMesh.vertices = displacedVertices;
+        deformingMesh.RecalculateNormals();
+    }
+
+    void UpdateVertex(int i)
+    {
+        Vector3 velocity = vertexVelocities[i];
+        displacedVertices[i] += velocity * Time.deltaTime;
     }
 
     void AddForceToVertex(int i, Vector3 point, float force)
     {
+        Vector3 pointToVertex = displacedVertices[i] - point;
+        float attenuatedForce = force / (1f + pointToVertex.sqrMagnitude);
+        float velocity = attenuatedForce * Time.deltaTime;
+        vertexVelocities[i] += pointToVertex.normalized * velocity;
     }
 }
