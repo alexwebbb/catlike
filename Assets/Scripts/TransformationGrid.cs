@@ -8,6 +8,7 @@ public class TransformationGrid : MonoBehaviour
     Matrix4x4 transformation;
 
     public Transform prefab;
+    public Transform gridContainer;
 
     public int gridResolution = 10;
 
@@ -59,6 +60,7 @@ public class TransformationGrid : MonoBehaviour
     Transform CreateGridPoint(int x, int y, int z)
     {
         Transform point = Instantiate<Transform>(prefab);
+        if (gridContainer) point.SetParent(gridContainer);
         point.localPosition = GetCoordinates(x, y, z);
         point.GetComponent<MeshRenderer>().material.color = new Color(
             (float)x / gridResolution,
