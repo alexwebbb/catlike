@@ -27,12 +27,12 @@ Shader "Custom/My First Shader" {
 			Interpolators MyVertexProgram (float4 position : POSITION) {
 				Interpolators i;
 				i.localPosition = position.xyz;
-				i.position = mul(UNITY_MATRIX_MVP, position);
+				i.position = UnityObjectToClipPos(position);
 				return i;
 			}
 
 			float4 MyFragmentProgram (Interpolators i) : SV_TARGET {
-				return float4(i.localPosition, 1);
+				return float4(i.localPosition + 0.5, 1);
 			}
 
 			ENDCG
