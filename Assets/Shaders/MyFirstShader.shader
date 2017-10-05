@@ -19,19 +19,20 @@ Shader "Custom/My First Shader" {
 
 			float4 _Tint;
 
-			float4 MyVertexProgram (
-				float4 position : POSITION,
-				out float3 localPosition : TEXCOORD0
-			) : SV_POSITION {
-				localPosition = position.xyz;
-				return UnityObjectToClipPos(position);
+			struct Interpolators {
+				float4 position : SV_POSITION;
+				float3 localPosition : TEXCOORD0;
+			};
+
+			Interpolators MyVertexProgram (float4 position : POSITION) {
+				Interpolators i;
+				i.localPosition = position.xyz;
+				i.position = mul(UNITY_MATRIX_MVP, position);
+				return i;
 			}
 
-			float4 MyFragmentProgram (
-				float4 position : SV_POSITION,
-				float3 localPosition : TEXCOORD0
-			) : SV_TARGET {
-				return float4(localPosition, 1);
+			float4 MyFragmentProgram (Interpolators i) : SV_TARGET {
+				return float4(i.localPosition, 1);
 			}
 
 			ENDCG
